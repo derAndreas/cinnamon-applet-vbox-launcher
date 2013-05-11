@@ -57,10 +57,26 @@ MyApplet.prototype = {
 			this.menu.addMenuItem(menuitemVbox);
 			this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 			
-			let [res, out, err, status] = GLib.spawn_command_line_sync("vboxmanage list vms");
+			let [res_all, out_all, err_all, status_all] = GLib.spawn_command_line_sync("vboxmanage list vms");
+			let [res_run, out_run, err_run, status_run] = GLib.spawn_command_line_sync("vboxmanage list runningvms");
+      let run_vms = {};
+      // get the running VMs
+      if(out_run.length != 0) {
+        let machines = out_run.toString().split("\n");
+        for(let i = 0; i < machines.length; i++) {
+          let machine = machines[i];
+          if(machine == "") {
+            continue;
+          }
+          let info = machine.split('" {');
+          let name = info[0].replace('"', '');
+          let id = info[1].replace("}", '');
+          run_vms[id] = true;
+        }
+      }
 			
-			if(out.length!=0) {
-				let machines = out.toString().split("\n");
+			if(out_all.length!=0) {
+				let machines = out_all.toString().split("\n");
 				for(let i=0; i<machines.length; i++) {
 					let machine = machines[i];
 					if(machine=="") continue;
@@ -69,15 +85,19 @@ MyApplet.prototype = {
 					let name = info[0].replace('"', '');
 					let id = info[1].replace('}', '');
 					
-          //let menuitem = new PopupMenu.PopupMenuItem(name);
           let menuitem = new PopupMenu.PopupSubMenuMenuItem(name);
-          let itemNormal = new PopupMenu.PopupMenuItem('Run Normal');
-          let itemHeadless = new PopupMenu.PopupMenuItem('Run Headless');
-          itemNormal.connect('activate', Lang.bind(this, function() { this.startVM(id); }));
-          itemHeadless.connect('activate', Lang.bind(this, function() { this.startVMHeadless(id); }));
-
-          menuitem.menu.addMenuItem(itemNormal);
-          menuitem.menu.addMenuItem(itemHeadless);
+          if(id in run_vms) {
+            let itemStop = new PopupMenu.PopupImageMenuItem('Stop VM With ACPI Shutdown', 'media-playback-start-symbolic');
+            itemStop.connect('activate', Lang.bind(this, function() { this.stopVM(id); }));
+            menuitem.menu.addMenuItem(itemStop);
+          } else {
+            let itemNormal = new PopupMenu.PopupImageMenuItem('Run Normal', 'media-record-symbolic');
+            let itemHeadless = new PopupMenu.PopupImageMenuItem('Run Headless', 'media-record-symbolic');
+            itemNormal.connect('activate', Lang.bind(this, function() { this.startVM(id); }));
+            itemHeadless.connect('activate', Lang.bind(this, function() { this.startVMHeadless(id); }));
+            menuitem.menu.addMenuItem(itemNormal);
+            menuitem.menu.addMenuItem(itemHeadless);
+          }
 
 					this.menu.addMenuItem(menuitem);
 				}
@@ -95,15 +115,19 @@ MyApplet.prototype = {
 	},
 	
 	startVM: function(id) {
-		Main.Util.spawnCommandLine("virtualbox --startvm "+id);
+		Main.Util.spawnCommandLine("virtualbox --startvm " +  id);
 	},
   startVMHeadless: function(id) {
-    Main.Util.spawnCommandLine('VBoxHeadless --startvm "'+id+'"');
+    Main.Util.spawnCommandLine('VBoxHeadless --startvm ' + id);
   },
 	
 	startVbox: function() {
 		Main.Util.spawnCommandLine("virtualbox");
 	},
+
+  stopVM: function(id) {
+    Main.Util.spawnCommandLine("VBoxManage controlvm " + id + " acpipowerbutton")
+  },
 
 	on_applet_clicked: function(event) {
 		if(this.settings.autoUpdate && !this.menu.isOpen) {
