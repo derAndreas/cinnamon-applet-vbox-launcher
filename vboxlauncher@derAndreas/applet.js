@@ -7,7 +7,7 @@ const Mainloop = imports.mainloop;
 const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
 const Main = imports.ui.main;
-const SettingsFile = GLib.build_filenamev([global.userdatadir, 'applets/vboxlauncher@adec/settings.json']);
+const SettingsFile = GLib.build_filenamev([global.userdatadir, 'applets/vboxlauncher@derAndreas/settings.json']);
 
 function MyMenu(launcher, orientation) {
     this._init(launcher, orientation);
@@ -53,6 +53,7 @@ MyApplet.prototype = {
 		try {
 			let menuitemVbox = new PopupMenu.PopupMenuItem("VirtualBox");
 			menuitemVbox.connect('activate', Lang.bind(this, this.startVbox));
+
 			this.menu.addMenuItem(menuitemVbox);
 			this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 			
@@ -68,8 +69,16 @@ MyApplet.prototype = {
 					let name = info[0].replace('"', '');
 					let id = info[1].replace('}', '');
 					
-					let menuitem = new PopupMenu.PopupMenuItem(name);
-					menuitem.connect('activate', Lang.bind(this, function() { this.startVM(id); }));
+          //let menuitem = new PopupMenu.PopupMenuItem(name);
+          let menuitem = new PopupMenu.PopupSubMenuMenuItem(name);
+          let itemNormal = new PopupMenu.PopupMenuItem('Run Normal');
+          let itemHeadless = new PopupMenu.PopupMenuItem('Run Headless');
+          itemNormal.connect('activate', Lang.bind(this, function() { this.startVM(id); }));
+          itemHeadless.connect('activate', Lang.bind(this, function() { this.startVMHeadless(id); }));
+
+          menuitem.menu.addMenuItem(itemNormal);
+          menuitem.menu.addMenuItem(itemHeadless);
+
 					this.menu.addMenuItem(menuitem);
 				}
 			}
@@ -88,6 +97,9 @@ MyApplet.prototype = {
 	startVM: function(id) {
 		Main.Util.spawnCommandLine("virtualbox --startvm "+id);
 	},
+  startVMHeadless: function(id) {
+    Main.Util.spawnCommandLine('VBoxHeadless --startvm "'+id+'"');
+  },
 	
 	startVbox: function() {
 		Main.Util.spawnCommandLine("virtualbox");

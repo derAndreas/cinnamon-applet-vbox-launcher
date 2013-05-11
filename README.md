@@ -3,22 +3,24 @@ Vbox Launcher applet
 
 Simple Cinnamon applet to launch Virtualbox virtual machines directly from the panel.
 
+Orginal Applet by [andreadec](https://github.com/andreadec/cinnamon-applet-vbox-launcher)
+Forked to add headless option, to run VMs in Headless mode.
 
 Installation
 ------------
 
 - Make sure Virtualbox is installed
-- Copy the folder `vboxlauncher@adec` to `~/.local/share/cinnamon/applets/`
+- Copy the folder `vboxlauncher@derAndreas` to `~/.local/share/cinnamon/applets/`
 - Enable the applet in "Cinnamon Settings"
 
 
 Usage
 -----
 
-The list of virtual machines is updated every time Cinnamon starts. You can choose if update it again every time the applet is clicked or to manually update  clicking on "Update list". The options menu is reachable right-clicking the applet.
+The list of virtual machines is updated every time Cinnamon starts. 
+You can choose if update it again every time the applet is clicked or to manually update  clicking on "Update list". The options menu is reachable right-clicking the applet.
 
 
 Test
 ----
-
-The script was tested with Cinnamon 1.4 on Mint 13.
+Tested on Linux Mint 14 with Cinnamon 1.6.7

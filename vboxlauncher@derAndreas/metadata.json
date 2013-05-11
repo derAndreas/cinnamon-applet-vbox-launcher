@@ -1,6 +1,6 @@
 {
-"uuid": "vboxlauncher@adec",
-"name": "Vbox Launcher",
+"uuid": "vboxlauncher@derAndreas",
+"name": "Vbox Launcher Extended",
 "description": "An applet to launch virtual machines.",
 "icon": "virtualbox"
 }
