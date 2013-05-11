@@ -4,7 +4,12 @@ Vbox Launcher applet
 Simple Cinnamon applet to launch Virtualbox virtual machines directly from the panel.
 
 Orginal Applet by [andreadec](https://github.com/andreadec/cinnamon-applet-vbox-launcher)
-Forked to add headless option, to run VMs in Headless mode.
+
+Forked to add 
+ - headless option, to run VMs in Headless mode
+ - set an icon for the status of the VM (running, stopped)
+ - if VM is running, a click on the VM will shutdown the VM via acpipoweroff
+
 
 Installation
 ------------
