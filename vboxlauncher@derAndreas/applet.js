@@ -9,10 +9,10 @@ const St = imports.gi.St;
 const Main = imports.ui.main;
 const SettingsFile = GLib.build_filenamev([global.userdatadir, 'applets/vboxlauncher@derAndreas/settings.json']);
 
-function MyMenu(launcher, orientation) {
+function vBoxMenu(launcher, orientation) {
   this._init(launcher, orientation);
 }
-MyMenu.prototype = {
+vBoxMenu.prototype = {
   __proto__: PopupMenu.PopupMenu.prototype,
   _init: function(launcher, orientation) {
     this._launcher = launcher;
@@ -36,7 +36,7 @@ MyApplet.prototype = {
       this.set_applet_icon_name("virtualbox");
 
       this.menuManager = new PopupMenu.PopupMenuManager(this);
-      this.menu = new MyMenu(this, orientation);
+      this.menu = new vBoxMenu(this, orientation);
       this.menuManager.addMenu(this.menu);
 
       this.loadSettings();
