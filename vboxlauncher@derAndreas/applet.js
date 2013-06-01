@@ -10,16 +10,16 @@ const Main = imports.ui.main;
 const SettingsFile = GLib.build_filenamev([global.userdatadir, 'applets/vboxlauncher@derAndreas/settings.json']);
 
 function MyMenu(launcher, orientation) {
-    this._init(launcher, orientation);
+  this._init(launcher, orientation);
 }
 MyMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
-    _init: function(launcher, orientation) {
-        this._launcher = launcher;
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
-        Main.uiGroup.add_actor(this.actor);
-        this.actor.hide();
-    }
+  __proto__: PopupMenu.PopupMenu.prototype,
+  _init: function(launcher, orientation) {
+    this._launcher = launcher;
+    PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, 0.0, orientation, 0);
+    Main.uiGroup.add_actor(this.actor);
+    this.actor.hide();
+  }
 }
 
 function MyApplet(orientation) {
@@ -29,23 +29,23 @@ function MyApplet(orientation) {
 MyApplet.prototype = {
 	__proto__: Applet.IconApplet.prototype,
 
-    _init: function(orientation) {
-        Applet.IconApplet.prototype._init.call(this, orientation);
+  _init: function(orientation) {
+    Applet.IconApplet.prototype._init.call(this, orientation);
 
-		try {
-			this.set_applet_icon_name("virtualbox");
-			
-			this.menuManager = new PopupMenu.PopupMenuManager(this);
-			this.menu = new MyMenu(this, orientation);
-			this.menuManager.addMenu(this.menu);
+    try {
+      this.set_applet_icon_name("virtualbox");
 
-			this.loadSettings();
-			this.updateMenu();
-			this.buildContextMenu();
-		}
-		catch (e) {
-			global.logError(e);
-		}
+      this.menuManager = new PopupMenu.PopupMenuManager(this);
+      this.menu = new MyMenu(this, orientation);
+      this.menuManager.addMenu(this.menu);
+
+      this.loadSettings();
+      this.updateMenu();
+      this.buildContextMenu();
+    }
+    catch (e) {
+      global.logError(e);
+    }
 	},
 	
 	updateMenu: function() {
