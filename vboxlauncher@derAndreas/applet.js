@@ -57,51 +57,30 @@ vBoxApplet.prototype = {
 			this.menu.addMenuItem(menuitemVbox);
 			this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 			
-			let [res_all, out_all, err_all, status_all] = GLib.spawn_command_line_sync("vboxmanage list vms");
-			let [res_run, out_run, err_run, status_run] = GLib.spawn_command_line_sync("vboxmanage list runningvms");
-      let run_vms = {};
-      // get the running VMs
-      if(out_run.length != 0) {
-        let machines = out_run.toString().split("\n");
-        for(let i = 0; i < machines.length; i++) {
-          let machine = machines[i];
-          if(machine == "") {
-            continue;
-          }
-          let info = machine.split('" {');
-          let name = info[0].replace('"', '');
-          let id = info[1].replace("}", '');
-          run_vms[id] = true;
-        }
-      }
-			
-			if(out_all.length!=0) {
-				let machines = out_all.toString().split("\n");
-				for(let i=0; i<machines.length; i++) {
-					let machine = machines[i];
-					if(machine=="") continue;
-					let info = machine.split('" {');
-					
-					let name = info[0].replace('"', '');
-					let id = info[1].replace('}', '');
-					
-          let menuitem = new PopupMenu.PopupSubMenuMenuItem(name);
-          if(id in run_vms) {
-            let itemStop = new PopupMenu.PopupImageMenuItem('Stop VM With ACPI Shutdown', 'media-playback-start-symbolic');
-            itemStop.connect('activate', Lang.bind(this, function() { this.stopVM(id); }));
-            menuitem.menu.addMenuItem(itemStop);
-          } else {
-            let itemNormal = new PopupMenu.PopupImageMenuItem('Run Normal', 'media-record-symbolic');
-            let itemHeadless = new PopupMenu.PopupImageMenuItem('Run Headless', 'media-record-symbolic');
-            itemNormal.connect('activate', Lang.bind(this, function() { this.startVM(id); }));
-            itemHeadless.connect('activate', Lang.bind(this, function() { this.startVMHeadless(id); }));
-            menuitem.menu.addMenuItem(itemNormal);
-            menuitem.menu.addMenuItem(itemHeadless);
-          }
+      var status = this._getVMStatus();
+      for(let i in status) {
+        let machine = status[i];
+        // build the menu
+        let menuItem = new PopupMenu.PopupSubMenuMenuItem(machine['name']);
 
-					this.menu.addMenuItem(menuitem);
-				}
-			}
+        if(machine.running === true) {
+          let itemStop = new PopupMenu.PopupImageMenuItem('Stop VM with ACPI Shutdown', 'media-playback-start-symbolic');
+          itemStop.connect('activate', Lang.bind(this, function() {this.stopVM(machine.id); }));
+          menuItem.menu.addMenuItem(itemStop);
+        } else {
+          let itemRunNormal = new PopupMenu.PopupImageMenuItem('Run Normal', 'media-record-symbolic');
+          let itemRunHeadless = new PopupMenu.PopupImageMenuItem('Run Headless', 'media-record-symbolic');
+
+          itemRunNormal.connect('activate', Lang.bind(this, function() { this.startVM(machine.id); }));
+          itemRunHeadless.connect('activate', Lang.bind(this, function() { this.startVMHeadless(machine.id); }));
+
+          menuItem.menu.addMenuItem(itemRunNormal);
+          menuItem.menu.addMenuItem(itemRunHeadless);
+        }
+
+        this.menu.addMenuItem(menuItem);
+      }
+
 		} catch(e) {
 			this.menu.addMenuItem(new PopupMenu.PopupMenuItem("ERROR. Make sure Virtualbox is installed.", { reactive: false }));
 		}
@@ -167,7 +146,39 @@ vBoxApplet.prototype = {
 		let out = Gio.BufferedOutputStream.new_sized(outputFile, 1024);
 		Cinnamon.write_string_to_stream(out, JSON.stringify(this.settings));
 		out.close(null);
-	}
+	},
+
+  _getVMStatus: function() {
+    // collect all vms then check which are running
+    var all = this._getVMCommandParser('vboxmanage list vms');
+
+    for(let machine in this._getVMCommandParser('vboxmanage list runningvms')) {
+      if(all.hasOwnProperty(machine)) {
+        all[machine].running = true;
+      }
+    }
+
+    return all
+  },
+
+  _getVMCommandParser: function(command) {
+    let result = {};
+    let [response, output, error, status] = GLib.spawn_command_line_sync(command);
+
+    if(output.length != 0) {
+      let machines = output.toString().split("\n");
+      let mlen = machines.length;
+
+      for(let i = 0; i < mlen; i++) {
+        let machine = machines[i].match(/"([^"]+)"\s+\{([^\}]+)\}/i);
+        if(machine) {
+          result[machine[2]] = {name : machine[1], id : machine[2]};
+        }
+      }
+    }
+
+    return result;
+  }
 };
 
 function main(metadata, orientation) {
