@@ -22,11 +22,11 @@ vBoxMenu.prototype = {
 }
 
 function vBoxApplet(orientation) {
-	this._init(orientation);
+  this._init(orientation);
 };
 
 vBoxApplet.prototype = {
-	__proto__: Applet.IconApplet.prototype,
+  __proto__: Applet.IconApplet.prototype,
 
   _init: function(orientation) {
     Applet.IconApplet.prototype._init.call(this, orientation);
@@ -41,21 +41,20 @@ vBoxApplet.prototype = {
       this.loadSettings();
       this.updateMenu();
       this.buildContextMenu();
-    }
-    catch (e) {
+    } catch (e) {
       global.logError(e);
     }
-	},
-	
-	updateMenu: function() {
-		this.menu.removeAll();
-		try {
-			let menuitemVbox = new PopupMenu.PopupMenuItem("VirtualBox");
-			menuitemVbox.connect('activate', Lang.bind(this, this.startVbox));
+  },
 
-			this.menu.addMenuItem(menuitemVbox);
-			this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-			
+  updateMenu: function() {
+    this.menu.removeAll();
+    try {
+      let menuitemVbox = new PopupMenu.PopupMenuItem("VirtualBox");
+      menuitemVbox.connect('activate', Lang.bind(this, this.startVbox));
+
+      this.menu.addMenuItem(menuitemVbox);
+      this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+
       var status = this._getVMStatus();
       for(let i in status) {
         let machine = status[i];
@@ -80,72 +79,72 @@ vBoxApplet.prototype = {
         this.menu.addMenuItem(menuItem);
       }
 
-		} catch(e) {
-			this.menu.addMenuItem(new PopupMenu.PopupMenuItem("ERROR. Make sure Virtualbox is installed.", { reactive: false }));
-		}
-		
-		if(!this.settings.autoUpdate) {
-			this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-			let menuitemUpdate = new PopupMenu.PopupMenuItem("Update list");
-			menuitemUpdate.connect('activate', Lang.bind(this, this.updateMenu));
-			this.menu.addMenuItem(menuitemUpdate);
-		}
-	},
-	
-	startVM: function(id) {
-		Main.Util.spawnCommandLine("virtualbox --startvm " +  id);
-	},
+    } catch(e) {
+      this.menu.addMenuItem(new PopupMenu.PopupMenuItem("ERROR. Make sure Virtualbox is installed.", { reactive: false }));
+    }
+
+    if(!this.settings.autoUpdate) {
+      this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+      let menuitemUpdate = new PopupMenu.PopupMenuItem("Update list");
+      menuitemUpdate.connect('activate', Lang.bind(this, this.updateMenu));
+      this.menu.addMenuItem(menuitemUpdate);
+    }
+  },
+
+  startVM: function(id) {
+    Main.Util.spawnCommandLine("virtualbox --startvm " +  id);
+  },
   startVMHeadless: function(id) {
     Main.Util.spawnCommandLine('VBoxHeadless --startvm ' + id);
   },
-	
-	startVbox: function() {
-		Main.Util.spawnCommandLine("virtualbox");
-	},
+
+  startVbox: function() {
+    Main.Util.spawnCommandLine("virtualbox");
+  },
 
   stopVM: function(id) {
     Main.Util.spawnCommandLine("VBoxManage controlvm " + id + " acpipowerbutton")
   },
 
-	on_applet_clicked: function(event) {
-		if(this.settings.autoUpdate && !this.menu.isOpen) {
-			this.updateMenu();
-		}
-		this.menu.toggle();
-	},
-	
-	buildContextMenu: function() {
-		this.switchAutoUpdate = new PopupMenu.PopupSwitchMenuItem("Auto update (slow)");
-		this.switchAutoUpdate.setToggleState(this.settings.autoUpdate);
-		this.switchAutoUpdate.connect('toggled', Lang.bind(this, this.onSwitchAutoUpdateClick));
-		this._applet_context_menu.addMenuItem(this.switchAutoUpdate);
-	},
-	
-	onSwitchAutoUpdateClick: function(item) {
-		this.settings.autoUpdate = item.state;
-		if(!item.state) {
-			this.updateMenu(); // Needed to make update button reappear if setting switched to off
-		}
-		this.saveSettings();
-	},
-	
-	loadSettings: function() {
-		try {
-			this.settings = JSON.parse(Cinnamon.get_file_contents_utf8_sync(SettingsFile));
-		} catch(e) {
-			global.logError(e);
-			global.logError("Settings file not found. Using default values.");
-			this.settings = JSON.parse("{\"autoUpdate\":false}");
-		}
-	},
-	
-	saveSettings: function() {
-		let file = Gio.file_new_for_path(SettingsFile);
-		let outputFile = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
-		let out = Gio.BufferedOutputStream.new_sized(outputFile, 1024);
-		Cinnamon.write_string_to_stream(out, JSON.stringify(this.settings));
-		out.close(null);
-	},
+  on_applet_clicked: function(event) {
+    if(this.settings.autoUpdate && !this.menu.isOpen) {
+      this.updateMenu();
+    }
+    this.menu.toggle();
+  },
+
+  buildContextMenu: function() {
+    this.switchAutoUpdate = new PopupMenu.PopupSwitchMenuItem("Auto update (slow)");
+    this.switchAutoUpdate.setToggleState(this.settings.autoUpdate);
+    this.switchAutoUpdate.connect('toggled', Lang.bind(this, this.onSwitchAutoUpdateClick));
+    this._applet_context_menu.addMenuItem(this.switchAutoUpdate);
+  },
+
+  onSwitchAutoUpdateClick: function(item) {
+    this.settings.autoUpdate = item.state;
+    if(!item.state) {
+      this.updateMenu(); // Needed to make update button reappear if setting switched to off
+    }
+    this.saveSettings();
+  },
+
+  loadSettings: function() {
+    try {
+      this.settings = JSON.parse(Cinnamon.get_file_contents_utf8_sync(SettingsFile));
+    } catch(e) {
+      global.logError(e);
+      global.logError("Settings file not found. Using default values.");
+      this.settings = JSON.parse("{\"autoUpdate\":false}");
+    }
+  },
+
+  saveSettings: function() {
+    let file = Gio.file_new_for_path(SettingsFile);
+    let outputFile = file.replace(null, false, Gio.FileCreateFlags.NONE, null);
+    let out = Gio.BufferedOutputStream.new_sized(outputFile, 1024);
+    Cinnamon.write_string_to_stream(out, JSON.stringify(this.settings));
+    out.close(null);
+  },
 
   _getVMStatus: function() {
     // collect all vms then check which are running
@@ -181,6 +180,6 @@ vBoxApplet.prototype = {
 };
 
 function main(metadata, orientation) {
-	let applet = new vBoxApplet(orientation);
-	return applet;
+  let applet = new vBoxApplet(orientation);
+  return applet;
 }
