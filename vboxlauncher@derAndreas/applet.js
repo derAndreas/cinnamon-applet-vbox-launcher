@@ -158,7 +158,7 @@ vBoxApplet.prototype = {
       }
     }
 
-    return all
+    return all;
   },
 
   _getVMCommandParser: function(command) {
