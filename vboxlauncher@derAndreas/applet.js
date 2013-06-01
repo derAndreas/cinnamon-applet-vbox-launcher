@@ -22,11 +22,11 @@ vBoxMenu.prototype = {
   }
 }
 
-function MyApplet(orientation) {
+function vBoxApplet(orientation) {
 	this._init(orientation);
 };
 
-MyApplet.prototype = {
+vBoxApplet.prototype = {
 	__proto__: Applet.IconApplet.prototype,
 
   _init: function(orientation) {
@@ -171,6 +171,6 @@ MyApplet.prototype = {
 };
 
 function main(metadata, orientation) {
-	let myApplet = new MyApplet(orientation);
-	return myApplet;
+	let applet = new vBoxApplet(orientation);
+	return applet;
 }
